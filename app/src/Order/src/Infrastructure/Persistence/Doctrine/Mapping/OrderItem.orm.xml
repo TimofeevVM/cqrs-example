@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                          https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+
+    <entity name="Order\Domain\OrderItem" table="order_item" schema="public">
+        <id name="id" type="string" column="id" />
+        <field name="productId" type="string" column="product_id" />
+        <field name="price" type="decimal" column="price" />
+        <field name="quantity" type="decimal" column="quantity" />
+        <field name="discount" type="decimal" column="discount" />
+        <many-to-one field="order" target-entity="Order\Domain\Order">
+            <join-column name="order_id" referenced-column-name="id" />
+        </many-to-one>
+    </entity>
+
+</doctrine-mapping>

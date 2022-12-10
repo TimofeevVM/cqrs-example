@@ -1,0 +1,67 @@
+version: '3.7'
+
+services:
+  app:
+    build:
+      context: .
+      target: app-dev
+      args:
+        # To authenticate to private registry either use username / password, or Oauth key/secret / etc
+        # Please add Composer Auth JSON Object
+        COMPOSER_AUTH: "{}"
+        APP_BASE_DIR: ${APP_BASE_DIR-.}
+    env_file:
+      - .env
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ${APP_BASE_DIR-.}:/app
+
+  web:
+    build:
+      context: .
+      target: web-dev
+      args:
+        APP_BASE_DIR: ${APP_BASE_DIR-.}
+    restart: unless-stopped
+    ports:
+      - "${INFRA_WEB_PORT:-8080}:8080"
+    environment:
+      # The Hostname for the FPM (needs to match the hostname for the `app`)
+      PHP_FPM_HOST: app
+    volumes:
+      - ${APP_BASE_DIR-.}/public:/app/public
+    depends_on:
+      - app
+
+  postgres:
+    container_name: ${APP_NAME}-db
+    image: postgres
+    environment:
+      POSTGRES_DB: ${APP_DATABASE_NAME}
+      POSTGRES_USER: ${APP_DATABASE_USER}
+      POSTGRES_PASSWORD: ${APP_DATABASE_SECRET}
+      PGDATA: /data/postgres
+    volumes:
+      - ./data/postgres:/data/postgres
+    ports:
+      - "${INFRA_PGDB_PORT:-5432}:5432"
+    restart: unless-stopped
+    networks:
+      - default
+
+  pgadmin:
+    container_name: ${APP_NAME}-pgadmin
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: 'v.timofeev@iqdev.digital'
+      PGADMIN_DEFAULT_PASSWORD: root
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - ./data/pgadmin:/var/lib/pgadmin
+    ports:
+      - "${INFRA_PGADMIN_PORT:-5050}:80"
+    restart: unless-stopped
+    networks:
+      - default

@@ -1,0 +1,3 @@
+#controllers:
+#    resource: ../app/Controller/
+#    type: attribute
